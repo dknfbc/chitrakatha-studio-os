@@ -1,0 +1,23 @@
+name: Chitrakatha Security Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  setup-check:
+    name: Verify security test setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Confirm repository files
+        run: |
+          test -f README.md
+          echo 'Repository checkout successful.'
+          echo 'This is a setup check only; Firestore security tests are not configured yet.'
