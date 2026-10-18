@@ -10,14 +10,26 @@ permissions:
   contents: read
 
 jobs:
-  setup-check:
-    name: Verify security test setup
+  firestore-rules:
+    name: Firestore security tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Confirm repository files
-        run: |
-          test -f README.md
-          echo 'Repository checkout successful.'
-          echo 'This is a setup check only; Firestore security tests are not configured yet.'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Java for Firestore emulator
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run Firestore emulator security tests
+        run: npm test
