@@ -104,3 +104,22 @@ test('unauthenticated clients cannot read profiles or financial records', async 
   await assertFails(getDoc(doc(db, 'users', 'owner-1')));
   await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
 });
+test('pending users cannot access operational records', async () => {
+  const db = env.authenticatedContext('pending-1').firestore();
+  await assertFails(getDoc(doc(db, 'deployments', 'job-1')));
+});
+
+test('Admin cannot read financial records', async () => {
+  const db = env.authenticatedContext('admin-1').firestore();
+  await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
+});
+
+test('Deployer cannot read financial records', async () => {
+  const db = env.authenticatedContext('deployer-1').firestore();
+  await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
+});
+
+test('Freelancer cannot read financial records', async () => {
+  const db = env.authenticatedContext('freelancer-1').firestore();
+  await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
+});
