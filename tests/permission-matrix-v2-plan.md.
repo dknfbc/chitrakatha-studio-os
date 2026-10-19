@@ -1,0 +1,25 @@
+Permission Matrix v2 — Test Plan
+
+Rules to verify
+
+1. Super Admin cannot read financial records, even when holding multiple roles.
+2. A Deployer can read client financial details only for deployments they own.
+3. A Deployer can read freelancer payment details only for freelancers assigned to their own deployments.
+4. A Deployer cannot read another Deployer's financial records or unrelated freelancer payments.
+5. A Freelancer can read only their own payment details for assignments they are assigned to.
+6. A Freelancer cannot read client package amounts, client advances/balances, or another freelancer's payments.
+7. Pending users cannot access operational or financial records.
+8. Users cannot promote themselves or approve their own accounts.
+
+Testing requirements
+
+- Test both allowed and denied actions.
+- Test direct document reads and queries.
+- Test attempts to access records by changing document IDs.
+- Keep financial data separate from operational records.
+- Do not change the existing Firestore rules in this step.
+- Do not deploy to a live Firebase project.
+
+Status
+
+Planning only. Tests must be implemented and run before permissions are changed.
