@@ -123,3 +123,12 @@ test('Freelancer cannot read financial records', async () => {
   const db = env.authenticatedContext('freelancer-1').firestore();
   await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
 });
+test('a user cannot modify another users profile', async () => {
+  const db = env.authenticatedContext('freelancer-1').firestore();
+
+  await assertFails(
+    updateDoc(doc(db, 'users', 'owner-1'), {
+      displayName: 'Unauthorized Change'
+    })
+  );
+});
