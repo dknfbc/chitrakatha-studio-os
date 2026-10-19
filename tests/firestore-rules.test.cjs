@@ -151,3 +151,12 @@ test('a freelancer cannot create financial records', async () => {
     })
   );
 });
+test('a freelancer cannot promote themselves to superAdmin', async () => {
+  const db = env.authenticatedContext('freelancer-1').firestore();
+
+  await assertFails(
+    updateDoc(doc(db, 'users', 'freelancer-1'), {
+      role: 'superAdmin'
+    })
+  );
+});
