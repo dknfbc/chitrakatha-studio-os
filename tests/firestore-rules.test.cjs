@@ -30,6 +30,29 @@ beforeEach(async () => {
       role: 'superAdmin',
       accountStatus: 'approved'
     });
+    await setDoc(doc(db, 'users', 'admin-1'), {
+  displayName: 'Synthetic Test Admin',
+  role: 'admin',
+  accountStatus: 'approved'
+});
+
+await setDoc(doc(db, 'users', 'deployer-1'), {
+  displayName: 'Synthetic Test Deployer',
+  role: 'deployer',
+  accountStatus: 'approved'
+});
+
+await setDoc(doc(db, 'users', 'freelancer-1'), {
+  displayName: 'Synthetic Test Freelancer',
+  role: 'freelancer',
+  accountStatus: 'approved'
+});
+
+await setDoc(doc(db, 'users', 'pending-1'), {
+  displayName: 'Synthetic Pending User',
+  role: 'freelancer',
+  accountStatus: 'pending'
+});
     await setDoc(doc(db, 'financialRecords', 'payment-1'), {
       ownerUid: 'owner-1', amount: 5000
     });
