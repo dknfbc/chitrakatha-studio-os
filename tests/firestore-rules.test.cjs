@@ -132,3 +132,12 @@ test('a user cannot modify another users profile', async () => {
     })
   );
 });
+test('a freelancer cannot modify financial records', async () => {
+  const db = env.authenticatedContext('freelancer-1').firestore();
+
+  await assertFails(
+    updateDoc(doc(db, 'financialRecords', 'payment-1'), {
+      amount: 1
+    })
+  );
+});
