@@ -141,3 +141,13 @@ test('a freelancer cannot modify financial records', async () => {
     })
   );
 });
+test('a freelancer cannot create financial records', async () => {
+  const db = env.authenticatedContext('freelancer-1').firestore();
+
+  await assertFails(
+    setDoc(doc(db, 'financialRecords', 'fake-payment'), {
+      ownerUid: 'freelancer-1',
+      amount: 999999
+    })
+  );
+});
