@@ -112,11 +112,9 @@ test('Super Admin mode denies finance even with multiple roles', async () => {
 test('Freelancer mode allows own assigned payment, not client finance', async () => {
   const db = dbAs('person-1', 'freelancer');
 
-  await assertSucceeds(getDoc(doc(db, 'freelancerPayments/payment-1')));
-  await assertFails(getDoc(doc(db, 'financeDeployments/finance-1')));
-  await assertFails(getDoc(doc(db, 'freelancerPayments/payment-2')));
-});
-
+  await assertSucceeds(getDoc(doc(db, 'financeDeployments/finance-1')));
+await assertSucceeds(getDoc(doc(db, 'freelancerPayments/payment-1')));
+await assertFails(getDoc(doc(db, 'freelancerPayments/payment-2')));
 test('Deployer mode allows own deployment finance only', async () => {
   const db = dbAs('person-1', 'deployer');
 
