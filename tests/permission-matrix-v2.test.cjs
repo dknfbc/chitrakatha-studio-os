@@ -17,9 +17,17 @@ const PROJECT_ID = 'chitrakatha-permission-v2-test';
 let env;
 
 function dbAs(uid, activeMode, accountStatus = 'approved') {
+  const rolesByUser = {
+    'person-1': ['superAdmin', 'deployer', 'freelancer'],
+    'deployer-1': ['deployer'],
+    'freelancer-1': ['freelancer'],
+    'pending-1': [],
+  };
+
   return env.authenticatedContext(uid, {
     activeMode,
     accountStatus,
+    roles: rolesByUser[uid] || [],
   }).firestore();
 }
 
