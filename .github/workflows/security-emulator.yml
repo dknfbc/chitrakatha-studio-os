@@ -1,10 +1,15 @@
+
 name: Chitrakatha Security Tests
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+      - permission-matrix-v2-tests
   pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -13,6 +18,7 @@ jobs:
   firestore-rules:
     name: Firestore security tests
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -21,6 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Set up Java for Firestore emulator
         uses: actions/setup-java@v4
@@ -31,5 +38,9 @@ jobs:
       - name: Install test dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Run Firestore emulator security tests
+      - name: Run existing security tests
         run: npm test
+
+      - name: Run Permission Matrix v2 baseline tests
+        if: github.ref == 'refs/heads/permission-matrix-v2-tests'
+        run: npm run test:permission-v2
