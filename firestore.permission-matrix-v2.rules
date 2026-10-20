@@ -13,11 +13,16 @@ service cloud.firestore {
         && request.auth.token.accountStatus == 'approved';
     }
 
+    function hasRole(role) {
+      return approved()
+        && request.auth.token.roles is list
+        && role in request.auth.token.roles;
+    }
+
     function activeMode(mode) {
       return approved()
         && request.auth.token.activeMode == mode
-        && request.auth.token.roles is list
-        && mode in request.auth.token.roles;
+        && hasRole(mode);
     }
 
     function isSuperAdminMode() {
@@ -47,7 +52,7 @@ service cloud.firestore {
       allow read: if signedIn()
         && request.auth.uid == userId;
 
-      // Role and approval changes require a trusted workflow.
+      // Role and approval changes must use a trusted workflow.
       allow create, update, delete: if false;
     }
 
@@ -70,16 +75,15 @@ service cloud.firestore {
     }
 
     match /financeDeployments/{financeId} {
-      allow read: if activeMode('deployer')
-        && !isSuperAdminMode()
+      allow read: if !isSuperAdminMode()
+        && activeMode('deployer')
         && resource.data.ownerUid == request.auth.uid;
 
       allow create, update, delete: if false;
     }
 
     match /freelancerPayments/{paymentId} {
-      allow read: if approved()
-        && !isSuperAdminMode()
+      allow read: if !isSuperAdminMode()
         && (
           (
             activeMode('deployer')
@@ -103,7 +107,7 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Everything else remains denied.
+    // Deny every collection not explicitly allowed above.
     match /{document=**} {
       allow read, write: if false;
     }
