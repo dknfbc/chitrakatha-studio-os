@@ -3,8 +3,107 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Candidate rules only. No access is granted yet.
-    // Do not deploy this file.
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function approved() {
+      return signedIn()
+        && request.auth.token.accountStatus == 'approved';
+    }
+
+    function activeMode(mode) {
+      return approved()
+        && request.auth.token.activeMode == mode
+        && request.auth.token.roles is list
+        && mode in request.auth.token.roles;
+    }
+
+    function isSuperAdminMode() {
+      return signedIn()
+        && request.auth.token.activeMode == 'superAdmin';
+    }
+
+    function canUseOperations() {
+      return approved()
+        && !isSuperAdminMode();
+    }
+
+    function deploymentExists(deploymentId) {
+      return exists(
+        /databases/$(database)/documents/deployments/$(deploymentId)
+      );
+    }
+
+    function isAssigned(deploymentId, freelancerUid) {
+      return deploymentExists(deploymentId)
+        && freelancerUid in get(
+          /databases/$(database)/documents/deployments/$(deploymentId)
+        ).data.assignedFreelancerUids;
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn()
+        && request.auth.uid == userId;
+
+      // Role and approval changes require a trusted workflow.
+      allow create, update, delete: if false;
+    }
+
+    match /deployments/{deploymentId} {
+      allow read: if canUseOperations()
+        && (
+          (
+            activeMode('deployer')
+            && resource.data.ownerUid == request.auth.uid
+          )
+          ||
+          (
+            activeMode('freelancer')
+            && request.auth.uid
+              in resource.data.assignedFreelancerUids
+          )
+        );
+
+      allow create, update, delete: if false;
+    }
+
+    match /financeDeployments/{financeId} {
+      allow read: if activeMode('deployer')
+        && !isSuperAdminMode()
+        && resource.data.ownerUid == request.auth.uid;
+
+      allow create, update, delete: if false;
+    }
+
+    match /freelancerPayments/{paymentId} {
+      allow read: if approved()
+        && !isSuperAdminMode()
+        && (
+          (
+            activeMode('deployer')
+            && resource.data.ownerUid == request.auth.uid
+            && isAssigned(
+              resource.data.deploymentId,
+              resource.data.freelancerUid
+            )
+          )
+          ||
+          (
+            activeMode('freelancer')
+            && resource.data.freelancerUid == request.auth.uid
+            && isAssigned(
+              resource.data.deploymentId,
+              request.auth.uid
+            )
+          )
+        );
+
+      allow create, update, delete: if false;
+    }
+
+    // Everything else remains denied.
     match /{document=**} {
       allow read, write: if false;
     }
