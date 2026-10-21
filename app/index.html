@@ -1,0 +1,505 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101114">
+<title>Chitrakatha Studio OS</title>
+<style>
+:root {
+  --bg:#101114; --panel:#191a20; --panel2:#202128;
+  --line:#30313b; --text:#f5f2ec; --muted:#a5a5b2;
+  --gold:#d9b879; --rose:#e67e91; --green:#87c9a2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,system-ui,-apple-system,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1200px;margin:auto;min-height:100vh}
+header{position:sticky;top:0;z-index:5;background:#101114ed;
+  backdrop-filter:blur(18px);border-bottom:1px solid var(--line);
+  padding:15px 18px;display:flex;align-items:center;
+  justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:42px;height:42px;border-radius:14px;
+  display:grid;place-items:center;color:#18140d;
+  background:linear-gradient(135deg,#f1d9a3,#b58a4d);
+  font-family:Georgia,serif;font-size:23px}
+.brand h1{font-size:15px;margin:0;letter-spacing:.4px}
+.brand small{display:block;color:var(--muted);margin-top:4px;font-size:10px}
+.mode{max-width:145px;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line);padding:10px;border-radius:12px}
+.layout{display:grid;grid-template-columns:215px minmax(0,1fr);min-height:calc(100vh - 73px)}
+aside{padding:22px 13px;border-right:1px solid var(--line)}
+.navlabel{font-size:10px;color:var(--muted);letter-spacing:1.5px;
+  padding:10px 12px}
+.nav{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:transparent;border:0;color:var(--muted);padding:13px 12px;
+  border-radius:12px;margin-bottom:5px;transition:.22s}
+.nav:hover{background:var(--panel2);color:var(--text);transform:translateX(3px)}
+.nav.active{background:#302a20;color:var(--gold);box-shadow:inset 3px 0 var(--gold)}
+.nav .ico{width:20px;text-align:center;font-size:17px}
+.sidefoot{margin:35px 10px;color:var(--muted);font-size:11px;line-height:1.8}
+main{padding:25px;min-width:0}
+.page{animation:enter .38s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}
+to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 2px #e67e9120,0 0 0 0 #e67e9100}
+50%{box-shadow:0 0 0 2px #e67e9140,0 0 0 6px #e67e9100}}
+.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+h2{font-family:Georgia,serif;font-size:clamp(27px,4vw,39px);
+  font-weight:400;margin:9px 0}
+.sub{color:var(--muted);font-size:13px;line-height:1.6}
+.toprow{display:flex;justify-content:space-between;align-items:center;
+  gap:12px;flex-wrap:wrap;margin-bottom:23px}
+.btn{background:var(--gold);color:#17130c;border:0;border-radius:11px;
+  padding:11px 15px;font-weight:650;transition:.2s}
+.btn:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.btn.secondary{background:var(--panel2);color:var(--text);
+  border:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.card{background:linear-gradient(145deg,#1c1d23,#17181d);
+  border:1px solid var(--line);border-radius:17px;padding:17px;
+  min-width:0;transition:border-color .25s,transform .25s}
+.card:hover{border-color:#716044;transform:translateY(-2px)}
+.metric{font-size:28px;font-family:Georgia,serif;margin:15px 0 6px}
+.muted{color:var(--muted);font-size:12px}
+.cardtitle{font-size:13px;font-weight:650}
+.wide{grid-column:span 2}
+.section{margin-top:25px}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;
+  gap:10px;margin-bottom:13px}
+.sectionhead h3{font-size:16px;margin:0;font-weight:550}
+.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.dayname{text-align:center;color:var(--muted);font-size:10px;padding:8px 0}
+.day{min-height:47px;border:1px solid transparent;border-radius:10px;
+  background:#202127;color:var(--text);position:relative;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  gap:3px;transition:.2s}
+.day:hover{border-color:var(--gold)}
+.day.empty{background:transparent;pointer-events:none}
+.day.booked{border-color:#8e4654;animation:pulse 2.6s infinite}
+.day.booked:after{content:"";position:absolute;inset:3px;border:1px solid var(--rose);
+  border-radius:50%;pointer-events:none}
+.day.bengali{box-shadow:inset 0 -3px var(--rose)}
+.day.hindu{box-shadow:inset 0 -3px var(--gold)}
+.day.both{box-shadow:inset 0 -3px #d2a6dd}
+.day.selected{background:#393022;border-color:var(--gold)}
+.day small{font-size:8px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:13px;margin-top:13px;color:var(--muted);font-size:11px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.list{display:flex;flex-direction:column;gap:9px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px;background:#202127;border:1px solid var(--line);border-radius:12px}
+.item strong{display:block;font-size:13px;margin-bottom:4px}
+.item small{color:var(--muted);font-size:11px}
+.badge{font-size:10px;border:1px solid #4b4c57;padding:5px 8px;
+  border-radius:20px;color:var(--muted);white-space:nowrap}
+.badge.green{color:var(--green);border-color:#426b51}
+.badge.rose{color:var(--rose);border-color:#75424b}
+.badge.gold{color:var(--gold);border-color:#766344}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field label{font-size:12px;color:var(--muted)}
+.field input,.field select{width:100%;background:#111216;color:var(--text);
+  border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0}
+.field input:focus,.field select:focus{outline:1px solid var(--gold)}
+.full{grid-column:1/-1}
+.notice{background:#282318;border:1px solid #6e5a38;border-radius:12px;
+  color:#e6d4ad;padding:12px;font-size:12px;line-height:1.6;margin-top:15px}
+.profile{display:flex;align-items:center;gap:13px}
+.avatar{width:46px;height:46px;display:grid;place-items:center;
+  border-radius:15px;background:#332c22;color:var(--gold);font-size:20px}
+.empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+.mobilebar{display:none}
+footer{text-align:center;color:#777987;font-size:10px;padding:25px}
+@media(max-width:760px){
+ .layout{display:block;padding-bottom:76px}
+ aside{display:none}
+ main{padding:20px 14px}
+ header{padding:12px}
+ .brand h1{font-size:13px}
+ .brand small{font-size:9px}
+ .mode{max-width:130px;font-size:11px;padding:9px 5px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .wide{grid-column:span 2}
+ .card{padding:13px}
+ .metric{font-size:25px}
+ .mobilebar{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:8;
+   justify-content:space-around;gap:2px;background:#17181df5;
+   border-top:1px solid var(--line);padding:8px 3px calc(8px + env(safe-area-inset-bottom))}
+ .mobilebar button{background:none;border:0;color:var(--muted);
+   font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px}
+ .mobilebar button.active{color:var(--gold)}
+ .mobilebar span{font-size:18px}
+ .day{min-height:39px;font-size:12px}
+ .calendar{gap:3px}
+ .formgrid{grid-template-columns:1fr}
+ .full{grid-column:auto}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">
+    <div class="logo">C</div>
+    <div><h1>CHITRAKATHA</h1><small>STUDIO OS · CINEMATIC WORKSPACE</small></div>
+  </div>
+  <select class="mode" id="mode" aria-label="Preview active role">
+    <option value="superAdmin">Super Admin mode</option>
+    <option value="deployer">Deployer mode</option>
+    <option value="freelancer">Freelancer mode</option>
+  </select>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="navlabel">WORKSPACE</div>
+  <button class="nav active" data-page="home"><span class="ico">◈</span> Overview</button>
+  <button class="nav" data-page="calendar"><span class="ico">▦</span> Calendar</button>
+  <button class="nav" data-page="deployments"><span class="ico">◇</span> Deployments</button>
+  <button class="nav" data-page="team"><span class="ico">♙</span> Team & profiles</button>
+  <button class="nav" data-page="finance"><span class="ico">◎</span> My finances</button>
+  <div class="sidefoot">CHITRAKATHA STUDIO<br>Made for stories that stay.</div>
+</aside>
+
+<main>
+<section id="home" class="page">
+  <div class="toprow">
+    <div><div class="eyebrow">Your creative command centre</div>
+      <h2 id="welcome">Every story, in its place.</h2>
+      <div class="sub">A calmer way to plan beautiful work.</div></div>
+    <button class="btn" id="newWork">＋ New deployment</button>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="muted">Workspace</div>
+      <div class="metric" id="metricOne">—</div><div class="muted" id="metricOneLabel">Your role</div></div>
+    <div class="card"><div class="muted">My assignments</div>
+      <div class="metric" id="metricTwo">0</div><div class="muted">Local demo records</div></div>
+    <div class="card"><div class="muted">Calendar</div>
+      <div class="metric" id="metricThree">Live</div><div class="muted">Interactive preview</div></div>
+
+    <div class="card wide">
+      <div class="sectionhead"><h3>Upcoming stories</h3>
+        <button class="btn secondary" data-goto="deployments">View all</button></div>
+      <div class="list" id="upcoming"></div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">Studio note</div>
+      <h3 style="font-family:Georgia,serif;font-weight:400">Make room for the moment.</h3>
+      <p class="sub">Your calendar, your crew, your stories — thoughtfully organised.</p>
+      <button class="btn secondary" data-goto="calendar">Explore calendar ↗</button>
+    </div>
+  </div>
+</section>
+
+<section id="calendar" class="page" hidden>
+  <div class="toprow">
+    <div><div class="eyebrow">Dates & auspicious seasons</div><h2>Studio calendar</h2>
+      <div class="sub">Select a day to inspect its date.</div></div>
+    <div style="display:flex;gap:7px">
+      <button class="btn secondary" id="prevMonth" aria-label="Previous month">←</button>
+      <button class="btn secondary" id="nextMonth" aria-label="Next month">→</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sectionhead"><h3 id="monthTitle">Calendar</h3><span class="badge">Local preview</span></div>
+    <div class="calendar" id="calendarGrid"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--rose)"></i>Bengali date sample</span>
+      <span><i class="dot" style="background:var(--gold)"></i>Hindu date sample</span>
+      <span><i class="dot" style="background:#d2a6dd"></i>Overlap</span>
+      <span><i class="dot" style="background:var(--rose)"></i>Booking demo</span>
+    </div>
+    <p class="sub" id="selectedDate">Choose a date.</p>
+  </div>
+  <div class="notice">Demo calendar only. Connect the approved Bengali/Hindu Panchang date dataset and actual bookings before using this calendar operationally.</div>
+</section>
+
+<section id="deployments" class="page" hidden>
+  <div class="toprow">
+    <div><div class="eyebrow">Work & assignments</div><h2>Deployments</h2>
+      <div class="sub" id="deploymentIntro">Manage work in this local preview.</div></div>
+    <button class="btn" id="createFromList">＋ Create work</button>
+  </div>
+  <div class="card">
+    <div class="sectionhead"><h3>Deployment records</h3><span class="badge">This device only</span></div>
+    <div class="list" id="deploymentList"></div>
+  </div>
+  <div class="section card" id="createPanel" hidden>
+    <h3 style="margin-top:0">New deployment</h3>
+    <form id="deploymentForm" class="formgrid">
+      <div class="field"><label for="client">Client / couple name</label><input id="client" required placeholder="e.g. Aditi & Arjun"></div>
+      <div class="field"><label for="eventDate">Event date</label><input id="eventDate" type="date" required></div>
+      <div class="field"><label for="ritual">Event / ritual</label>
+        <select id="ritual"><option>Wedding</option><option>Engagement</option><option>Reception</option><option>Birthday</option><option>Corporate</option><option>Other</option></select></div>
+      <div class="field"><label for="callTime">Call time</label><input id="callTime" type="time"></div>
+      <div class="field"><label for="crew">Crew needed</label><input id="crew" type="number" min="1" max="50" value="2"></div>
+      <div class="field"><label for="coverage">Coverage</label>
+        <select id="coverage"><option>Photography</option><option>Cinematic video</option><option>Traditional plus cinematic video</option><option>Photo + video</option></select></div>
+      <div class="field full"><label for="location">Shoot location</label><input id="location" placeholder="Venue / town"></div>
+      <div class="full"><button class="btn" type="submit">Save local demo</button>
+        <button class="btn secondary" type="button" id="cancelCreate">Cancel</button></div>
+    </form>
+    <div class="notice">This saves only in the current page session. It does not create a shared booking or notify team members.</div>
+  </div>
+</section>
+
+<section id="team" class="page" hidden>
+  <div class="toprow"><div><div class="eyebrow">The people behind the frame</div>
+    <h2>Team & profiles</h2><div class="sub">Role-specific workspace preview.</div></div></div>
+  <div class="grid">
+    <div class="card wide">
+      <div class="profile"><div class="avatar">✦</div><div>
+        <div class="cardtitle" id="profileRole">Workspace preview</div>
+        <div class="muted">Current selected mode</div></div></div>
+      <div class="section"><div class="cardtitle">Access boundaries</div>
+        <p class="sub" id="roleDescription"></p></div>
+    </div>
+    <div class="card"><div class="eyebrow">Team access</div>
+      <h3 style="font-family:Georgia,serif;font-weight:400">Profiles</h3>
+      <p class="sub">Real member accounts and approved profile editing are not connected yet.</p></div>
+  </div>
+</section>
+
+<section id="finance" class="page" hidden>
+  <div class="toprow"><div><div class="eyebrow">Private workspace</div>
+    <h2>My finances</h2><div class="sub">Financial access must be enforced by backend rules.</div></div></div>
+  <div class="card">
+    <div class="eyebrow">Access status</div>
+    <h3 id="financeTitle">Preview only</h3>
+    <p class="sub" id="financeDescription"></p>
+    <div class="notice">No real amounts are shown or stored here. This screen does not connect to financial records. Super Admin mode must never be granted financial access.</div>
+  </div>
+</section>
+</main>
+</div>
+
+<nav class="mobilebar" aria-label="Main navigation">
+  <button class="active" data-page="home"><span>◈</span>Home</button>
+  <button data-page="calendar"><span>▦</span>Calendar</button>
+  <button data-page="deployments"><span>◇</span>Work</button>
+  <button data-page="team"><span>♙</span>Team</button>
+  <button data-page="finance"><span>◎</span>Finance</button>
+</nav>
+<footer>CHITRAKATHA STUDIO OS · INTERFACE PREVIEW · NOT CONNECTED TO LIVE DATA</footer>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const mode = $('mode');
+  let shownMonth = new Date();
+  let selectedDay = null;
+  let records = [];
+  let nextId = 1;
+
+  const roleNames = {
+    superAdmin:'Super Admin',
+    deployer:'Deployer',
+    freelancer:'Freelancer'
+  };
+
+  function pageTo(name) {
+    document.querySelectorAll('main .page').forEach(p => {
+      p.hidden = p.id !== name;
+      if (p.id === name) {
+        p.classList.remove('page');
+        void p.offsetWidth;
+        p.classList.add('page');
+      }
+    });
+    document.querySelectorAll('[data-page]').forEach(b => {
+      b.classList.toggle('active', b.dataset.page === name);
+    });
+    window.scrollTo({top:0,behavior:'smooth'});
+    if (name === 'calendar') renderCalendar();
+    if (name === 'deployments') renderDeployments();
+  }
+
+  document.querySelectorAll('[data-page]').forEach(b =>
+    b.addEventListener('click', () => pageTo(b.dataset.page)));
+  document.querySelectorAll('[data-goto]').forEach(b =>
+    b.addEventListener('click', () => pageTo(b.dataset.goto)));
+
+  function updateRole() {
+    const m = mode.value;
+    $('welcome').textContent = m === 'superAdmin'
+      ? 'Studio overview.'
+      : m === 'deployer' ? 'Bring every detail together.' : 'Your next story awaits.';
+    $('metricOne').textContent = roleNames[m];
+    $('metricOneLabel').textContent = 'Selected preview mode';
+    $('metricTwo').textContent = records.length;
+    $('profileRole').textContent = roleNames[m] + ' workspace';
+    $('roleDescription').textContent = m === 'superAdmin'
+      ? 'Super Admin mode has no financial access. Trusted account and role management still needs backend integration.'
+      : m === 'deployer'
+      ? 'A real Deployer will manage their own deployments and see permitted finances only for their own work.'
+      : 'A real Freelancer will see assigned work and only their own permitted payment details.';
+    $('deploymentIntro').textContent = m === 'deployer'
+      ? 'Create and review your local deployment examples.'
+      : m === 'freelancer'
+      ? 'Preview the assignments area. Real assignment delivery is not connected.'
+      : 'Operational preview. Super Admin has no finance access.';
+    const financeAllowed = m !== 'superAdmin';
+    $('financeTitle').textContent = m === 'superAdmin'
+      ? 'Financial access unavailable'
+      : 'No live financial records connected';
+    $('financeDescription').textContent = m === 'superAdmin'
+      ? 'Super Admin mode is explicitly denied financial information.'
+      : m === 'deployer'
+      ? 'The real app must restrict finance to deployments owned by this Deployer.'
+      : 'The real app must restrict this area to the Freelancer’s own permitted payments.';
+    $('newWork').hidden = m !== 'deployer';
+    $('createFromList').hidden = m !== 'deployer';
+    renderUpcoming();
+    renderDeployments();
+  }
+
+  function renderUpcoming() {
+    const list = $('upcoming');
+    list.replaceChildren();
+    const visible = records.slice(-3).reverse();
+    if (!visible.length) {
+      list.innerHTML = '<div class="empty">No demo deployments yet. Create one in Deployer mode.</div>';
+      return;
+    }
+    visible.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const left = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = r.client;
+      const details = document.createElement('small');
+      details.textContent = `${r.date} · ${r.ritual}`;
+      left.append(title, details);
+      const badge = document.createElement('span');
+      badge.className = 'badge gold';
+      badge.textContent = 'Demo';
+      item.append(left,badge);
+      list.append(item);
+    });
+  }
+
+  function renderDeployments() {
+    const list = $('deploymentList');
+    list.replaceChildren();
+    if (!records.length) {
+      list.innerHTML = '<div class="empty">No local demo records. Switch to Deployer mode to create one.</div>';
+      return;
+    }
+    [...records].reverse().forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const left = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = r.client;
+      const details = document.createElement('small');
+      details.textContent = `${r.date} · ${r.ritual} · ${r.coverage}`;
+      const loc = document.createElement('small');
+      loc.textContent = r.location || 'Location not added';
+      left.append(title,details,document.createElement('br'),loc);
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = r.crew + ' crew';
+      item.append(left,badge);
+      list.append(item);
+    });
+  }
+
+  function renderCalendar() {
+    const grid = $('calendarGrid');
+    grid.replaceChildren();
+    const year = shownMonth.getFullYear();
+    const month = shownMonth.getMonth();
+    $('monthTitle').textContent = shownMonth.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+    ['S','M','T','W','T','F','S'].forEach(day => {
+      const el = document.createElement('div');
+      el.className = 'dayname';
+      el.textContent = day;
+      grid.append(el);
+    });
+    const first = new Date(year,month,1).getDay();
+    const count = new Date(year,month+1,0).getDate();
+    for (let i=0;i<first;i++) {
+      const blank = document.createElement('div');
+      blank.className = 'day empty';
+      grid.append(blank);
+    }
+    for (let day=1;day<=count;day++) {
+      const el = document.createElement('button');
+      el.className = 'day';
+      el.type = 'button';
+      el.textContent = day;
+      const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      if (records.some(r => r.date === dateKey)) el.classList.add('booked');
+      if (selectedDay === dateKey) el.classList.add('selected');
+      el.addEventListener('click',() => {
+        selectedDay = dateKey;
+        $('selectedDate').textContent = 'Selected: ' +
+          new Date(year,month,day).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) +
+          (records.some(r=>r.date===dateKey) ? ' · Demo deployment exists.' : ' · No demo deployment.');
+        renderCalendar();
+      });
+      grid.append(el);
+    }
+    if (!selectedDay) $('selectedDate').textContent = 'Select any date to inspect it.';
+  }
+
+  $('prevMonth').addEventListener('click',() => {
+    shownMonth = new Date(shownMonth.getFullYear(),shownMonth.getMonth()-1,1);
+    renderCalendar();
+  });
+  $('nextMonth').addEventListener('click',() => {
+    shownMonth = new Date(shownMonth.getFullYear(),shownMonth.getMonth()+1,1);
+    renderCalendar();
+  });
+
+  function openCreate() {
+    if (mode.value !== 'deployer') {
+      alert('Switch to Deployer mode to preview creating a deployment.');
+      return;
+    }
+    $('createPanel').hidden = false;
+    $('createPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  $('newWork').addEventListener('click',openCreate);
+  $('createFromList').addEventListener('click',openCreate);
+  $('cancelCreate').addEventListener('click',() => {
+    $('createPanel').hidden = true;
+  });
+
+  $('deploymentForm').addEventListener('submit',event => {
+    event.preventDefault();
+    if (mode.value !== 'deployer') return;
+    records.push({
+      id:nextId++,
+      client:$('client').value.trim(),
+      date:$('eventDate').value,
+      ritual:$('ritual').value,
+      callTime:$('callTime').value,
+      crew:$('crew').value,
+      coverage:$('coverage').value,
+      location:$('location').value.trim()
+    });
+    $('deploymentForm').reset();
+    $('createPanel').hidden = true;
+    updateRole();
+    renderCalendar();
+    alert('Demo record added for this page session only. It has not been shared with your team.');
+  });
+
+  mode.addEventListener('change',updateRole);
+  updateRole();
+  renderCalendar();
+})();
+</script>
+</body>
+</html>
