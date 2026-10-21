@@ -188,3 +188,24 @@ test('Unauthenticated users cannot read protected records', async () => {
   await assertFails(getDoc(doc(db, 'financeDeployments/finance-1')));
   await assertFails(getDoc(doc(db, 'freelancerPayments/payment-1')));
 });
+
+test('Super Admin mode cannot access finance by changing client-side mode', async () => {
+  const db = dbAs('person-1', 'superAdmin');
+
+  await assertFails(
+    getDoc(doc(db, 'financeDeployments/finance-1')),
+  );
+
+  await assertFails(
+    getDoc(doc(db, 'financeDeployments/finance-2')),
+  );
+
+  await assertFails(
+    getDoc(doc(db, 'freelancerPayments/payment-1')),
+  );
+
+  await assertFails(
+    getDoc(doc(db, 'freelancerPayments/payment-2')),
+  );
+});
+
