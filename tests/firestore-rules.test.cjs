@@ -5,7 +5,7 @@ const {
   assertSucceeds,
   assertFails
 } = require('@firebase/rules-unit-testing');
-const { doc, getDoc, setDoc, updateDoc } = require('firebase/firestore');
+const { doc, getDoc, setDoc, updateDoc, serverTimestamp } = require('firebase/firestore');
 const fs = require('node:fs');
 
 let env;
@@ -31,28 +31,25 @@ beforeEach(async () => {
       accountStatus: 'approved'
     });
     await setDoc(doc(db, 'users', 'admin-1'), {
-  displayName: 'Synthetic Test Admin',
-  role: 'admin',
-  accountStatus: 'approved'
-});
-
-await setDoc(doc(db, 'users', 'deployer-1'), {
-  displayName: 'Synthetic Test Deployer',
-  role: 'deployer',
-  accountStatus: 'approved'
-});
-
-await setDoc(doc(db, 'users', 'freelancer-1'), {
-  displayName: 'Synthetic Test Freelancer',
-  role: 'freelancer',
-  accountStatus: 'approved'
-});
-
-await setDoc(doc(db, 'users', 'pending-1'), {
-  displayName: 'Synthetic Pending User',
-  role: 'freelancer',
-  accountStatus: 'pending'
-});
+      displayName: 'Synthetic Test Admin',
+      role: 'admin',
+      accountStatus: 'approved'
+    });
+    await setDoc(doc(db, 'users', 'deployer-1'), {
+      displayName: 'Synthetic Test Deployer',
+      role: 'deployer',
+      accountStatus: 'approved'
+    });
+    await setDoc(doc(db, 'users', 'freelancer-1'), {
+      displayName: 'Synthetic Test Freelancer',
+      role: 'freelancer',
+      accountStatus: 'approved'
+    });
+    await setDoc(doc(db, 'users', 'pending-1'), {
+      displayName: 'Synthetic Pending User',
+      role: 'freelancer',
+      accountStatus: 'pending'
+    });
     await setDoc(doc(db, 'financialRecords', 'payment-1'), {
       ownerUid: 'owner-1', amount: 5000
     });
@@ -72,12 +69,29 @@ test('a user cannot read another profile', async () => {
   await assertFails(getDoc(doc(db, 'users', 'owner-1')));
 });
 
-test('a client cannot create a profile granting itself superAdmin', async () => {
-  const db = env.authenticatedContext('freelancer-1').firestore();
-  await assertFails(setDoc(doc(db, 'users', 'freelancer-1'), {
-    displayName: 'Synthetic Test',
+test('a new user can create only their own pending, unprivileged profile', async () => {
+  const db = env.authenticatedContext('new-user-1').firestore();
+  await assertSucceeds(setDoc(doc(db, 'users', 'new-user-1'), {
+    uid: 'new-user-1',
+    name: 'Synthetic New User',
+    email: 'new-user@example.test',
+    requestedRole: 'freelancer',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
+});
+
+test('a new user cannot create a profile granting itself superAdmin', async () => {
+  const db = env.authenticatedContext('attacker-1').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'attacker-1'), {
+    uid: 'attacker-1',
+    name: 'Synthetic Attacker',
+    email: 'attacker@example.test',
+    requestedRole: 'superAdmin',
+    status: 'approved',
     role: 'superAdmin',
-    accountStatus: 'approved'
+    createdAt: serverTimestamp()
   }));
 });
 
@@ -104,6 +118,7 @@ test('unauthenticated clients cannot read profiles or financial records', async 
   await assertFails(getDoc(doc(db, 'users', 'owner-1')));
   await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
 });
+
 test('pending users cannot access operational records', async () => {
   const db = env.authenticatedContext('pending-1').firestore();
   await assertFails(getDoc(doc(db, 'deployments', 'job-1')));
@@ -114,7 +129,7 @@ test('Admin cannot read financial records', async () => {
   await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
 });
 
-test('Deployer cannot read financial records', async () => {
+test('Deployer cannot read financial records by default', async () => {
   const db = env.authenticatedContext('deployer-1').firestore();
   await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
 });
@@ -123,40 +138,32 @@ test('Freelancer cannot read financial records', async () => {
   const db = env.authenticatedContext('freelancer-1').firestore();
   await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
 });
+
 test('a user cannot modify another users profile', async () => {
   const db = env.authenticatedContext('freelancer-1').firestore();
-
-  await assertFails(
-    updateDoc(doc(db, 'users', 'owner-1'), {
-      displayName: 'Unauthorized Change'
-    })
-  );
+  await assertFails(updateDoc(doc(db, 'users', 'owner-1'), {
+    displayName: 'Unauthorized Change'
+  }));
 });
+
 test('a freelancer cannot modify financial records', async () => {
   const db = env.authenticatedContext('freelancer-1').firestore();
-
-  await assertFails(
-    updateDoc(doc(db, 'financialRecords', 'payment-1'), {
-      amount: 1
-    })
-  );
+  await assertFails(updateDoc(doc(db, 'financialRecords', 'payment-1'), {
+    amount: 1
+  }));
 });
+
 test('a freelancer cannot create financial records', async () => {
   const db = env.authenticatedContext('freelancer-1').firestore();
-
-  await assertFails(
-    setDoc(doc(db, 'financialRecords', 'fake-payment'), {
-      ownerUid: 'freelancer-1',
-      amount: 999999
-    })
-  );
+  await assertFails(setDoc(doc(db, 'financialRecords', 'fake-payment'), {
+    ownerUid: 'freelancer-1',
+    amount: 999999
+  }));
 });
+
 test('a freelancer cannot promote themselves to superAdmin', async () => {
   const db = env.authenticatedContext('freelancer-1').firestore();
-
-  await assertFails(
-    updateDoc(doc(db, 'users', 'freelancer-1'), {
-      role: 'superAdmin'
-    })
-  );
+  await assertFails(updateDoc(doc(db, 'users', 'freelancer-1'), {
+    role: 'superAdmin'
+  }));
 });
