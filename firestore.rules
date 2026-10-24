@@ -1,13 +1,35 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read: if request.auth != null
-                  && request.auth.uid == userId;
-      allow create, update, delete: if false;
+    function signedInAs(userId) {
+      return request.auth != null && request.auth.uid == userId;
     }
 
-    // All other collections remain denied until their permissions are implemented.
+    // Signup may create only a pending, unprivileged profile for its own Auth UID.
+    // Approval and role assignment must be performed by a trusted admin process,
+    // never by a client write.
+    match /users/{userId} {
+      allow read: if signedInAs(userId);
+      allow create: if signedInAs(userId)
+        && request.resource.data.keys().hasOnly([
+          'uid', 'name', 'email', 'requestedRole', 'status', 'role', 'createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'uid', 'name', 'email', 'requestedRole', 'status', 'role', 'createdAt'
+        ])
+        && request.resource.data.uid == userId
+        && request.resource.data.email is string
+        && request.resource.data.name is string
+        && request.resource.data.requestedRole is string
+        && request.resource.data.requestedRole.size() > 0
+        && request.resource.data.requestedRole.size() <= 80
+        && request.resource.data.status == 'pending'
+        && request.resource.data.role == null
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Keep all other data denied until collection-specific authorization is reviewed.
     match /{document=**} {
       allow read, write: if false;
     }
