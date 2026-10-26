@@ -57,7 +57,22 @@ await setDoc(doc(db, 'users', 'pending-1'), {
       ownerUid: 'owner-1', amount: 5000
     });
     await setDoc(doc(db, 'deployments', 'job-1'), {
-      client: 'Synthetic test only'
+      client: 'Synthetic test only',
+      deployerUid: 'deployer-1'
+    });
+    // Synthetic records for the proposed separated finance partitions.
+    // They must remain inaccessible until ownership-aware rules are implemented.
+    await setDoc(doc(db, 'financeDeployment', 'job-1'), {
+      deployerUid: 'deployer-1',
+      clientPackage: 5000,
+      advance: 1000,
+      balance: 4000
+    });
+    await setDoc(doc(db, 'financeAssignments', 'assignment-1'), {
+      deploymentId: 'job-1',
+      deployerUid: 'deployer-1',
+      freelancerUid: 'freelancer-1',
+      paymentAmount: 500
     });
   });
 });
@@ -92,6 +107,20 @@ test('a client cannot change role or approval status', async () => {
 test('Super Admin cannot read financial records', async () => {
   const db = env.authenticatedContext('owner-1').firestore();
   await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
+});
+
+test('the proposed deployment finance partition stays denied to all current roles', async () => {
+  for (const uid of ['owner-1', 'admin-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
+    const db = env.authenticatedContext(uid).firestore();
+    await assertFails(getDoc(doc(db, 'financeDeployment', 'job-1')));
+  }
+});
+
+test('the proposed assignment finance partition stays denied to all current roles', async () => {
+  for (const uid of ['owner-1', 'admin-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
+    const db = env.authenticatedContext(uid).firestore();
+    await assertFails(getDoc(doc(db, 'financeAssignments', 'assignment-1')));
+  }
 });
 
 test('operational records remain denied until their permissions are implemented', async () => {
