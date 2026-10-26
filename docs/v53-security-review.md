@@ -12,7 +12,10 @@
   - `financeAssignments/{assignmentId}` for a freelancer's payment details for a particular assignment.
   - `deployments/{deploymentId}` and assignment records should contain operational fields only.
 - The current tests seed `financialRecords/payment-1` and verify broad denial. They do not test the intended future positive case (a deployer reading their own finance document) or the new finance collections.
-- The main app HTML and `public/index.html` are each approximately 4.3 MB and the GitHub file reader did not return their content. The app's actual Firestore paths, write patterns, and auth/profile bootstrap therefore remain unverified.
+- The app initializes Firebase Auth and Firestore. The observed client code uses only `users/{uid}` so far: access requests call `setDoc` with `status: 'pending'`, `role: null`, and `createdAt`; sign-in and the auth-state handler read `status === 'approved'`.
+- **Registration mismatch:** the current rules deny all client-side profile creation, so the access-request `setDoc` is rejected by Firestore.
+- **Approval-field mismatch:** the app checks `status`, while the security test fixtures use `accountStatus`. The field name must be standardized before approval rules or tests can be trusted.
+- No app-level finance collection reads/writes were found in the inspected Firebase module. That does not establish that all finance UI flows are implemented or that finance is already safely partitioned.
 
 ## Decision
 
@@ -20,7 +23,7 @@ Do **not** relax the current Firestore rules yet. Enabling writes or operational
 
 ## Required implementation order
 
-1. Inspect the app's Firebase initialization, authentication/profile bootstrap, and every Firestore read/write path.
+1. Reconcile the signup/profile bootstrap with the deny-by-default rules and standardize the approval field (`status` versus `accountStatus`) in a deliberate, tested change.
 2. Confirm whether finance is already separated from operational documents. If not, plan a migration before allowing finance reads.
 3. Implement rule helpers that require an authenticated, approved user and verify role/ownership using trusted fields. Never trust a client-supplied role, owner UID, or assignment ID without checking the corresponding server-controlled records.
 4. Keep Super Admin explicitly denied access to both finance collections. Do not expose finance through aggregate documents, dashboards, search, logs, exports, or callable/server endpoints.
