@@ -5,7 +5,7 @@ const {
   assertSucceeds,
   assertFails
 } = require('@firebase/rules-unit-testing');
-const { doc, getDoc, setDoc, updateDoc } = require('firebase/firestore');
+const { collection, doc, getDoc, getDocs, setDoc, updateDoc } = require('firebase/firestore');
 const fs = require('node:fs');
 
 let env;
@@ -121,6 +121,20 @@ test('the proposed assignment finance partition stays denied to all current role
     const db = env.authenticatedContext(uid).firestore();
     await assertFails(getDoc(doc(db, 'financeAssignments', 'assignment-1')));
   }
+});
+
+test('list queries cannot enumerate deployment finance records', async () => {
+  for (const uid of ['owner-1', 'admin-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
+    const db = env.authenticatedContext(uid).firestore();
+    await assertFails(getDocs(collection(db, 'financeDeployment')));
+    await assertFails(getDocs(collection(db, 'financeAssignments')));
+  }
+});
+
+test('unauthenticated clients cannot enumerate separated finance records', async () => {
+  const db = env.unauthenticatedContext().firestore();
+  await assertFails(getDocs(collection(db, 'financeDeployment')));
+  await assertFails(getDocs(collection(db, 'financeAssignments')));
 });
 
 test('operational records remain denied until their permissions are implemented', async () => {
