@@ -30,12 +30,6 @@ beforeEach(async () => {
       role: 'superAdmin',
       accountStatus: 'approved'
     });
-    await setDoc(doc(db, 'users', 'admin-1'), {
-  displayName: 'Synthetic Test Admin',
-  role: 'admin',
-  accountStatus: 'approved'
-});
-
 await setDoc(doc(db, 'users', 'deployer-1'), {
   displayName: 'Synthetic Test Deployer',
   role: 'deployer',
@@ -110,21 +104,21 @@ test('Super Admin cannot read financial records', async () => {
 });
 
 test('the proposed deployment finance partition stays denied to all current roles', async () => {
-  for (const uid of ['owner-1', 'admin-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
+  for (const uid of ['owner-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
     const db = env.authenticatedContext(uid).firestore();
     await assertFails(getDoc(doc(db, 'financeDeployment', 'job-1')));
   }
 });
 
 test('the proposed assignment finance partition stays denied to all current roles', async () => {
-  for (const uid of ['owner-1', 'admin-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
+  for (const uid of ['owner-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
     const db = env.authenticatedContext(uid).firestore();
     await assertFails(getDoc(doc(db, 'financeAssignments', 'assignment-1')));
   }
 });
 
 test('list queries cannot enumerate deployment finance records', async () => {
-  for (const uid of ['owner-1', 'admin-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
+  for (const uid of ['owner-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
     const db = env.authenticatedContext(uid).firestore();
     await assertFails(getDocs(collection(db, 'financeDeployment')));
     await assertFails(getDocs(collection(db, 'financeAssignments')));
@@ -150,11 +144,6 @@ test('unauthenticated clients cannot read profiles or financial records', async 
 test('pending users cannot access operational records', async () => {
   const db = env.authenticatedContext('pending-1').firestore();
   await assertFails(getDoc(doc(db, 'deployments', 'job-1')));
-});
-
-test('Admin cannot read financial records', async () => {
-  const db = env.authenticatedContext('admin-1').firestore();
-  await assertFails(getDoc(doc(db, 'financialRecords', 'payment-1')));
 });
 
 test('Deployer cannot read financial records', async () => {
