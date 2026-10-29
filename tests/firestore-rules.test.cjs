@@ -28,24 +28,24 @@ beforeEach(async () => {
     await setDoc(doc(db, 'users', 'owner-1'), {
       displayName: 'Synthetic Test Owner',
       role: 'superAdmin',
-      accountStatus: 'approved'
+      status: 'approved'
     });
 await setDoc(doc(db, 'users', 'deployer-1'), {
   displayName: 'Synthetic Test Deployer',
   role: 'deployer',
-  accountStatus: 'approved'
+  status: 'approved'
 });
 
 await setDoc(doc(db, 'users', 'freelancer-1'), {
   displayName: 'Synthetic Test Freelancer',
   role: 'freelancer',
-  accountStatus: 'approved'
+  status: 'approved'
 });
 
 await setDoc(doc(db, 'users', 'pending-1'), {
   displayName: 'Synthetic Pending User',
   role: 'freelancer',
-  accountStatus: 'pending'
+  status: 'pending'
 });
     await setDoc(doc(db, 'financialRecords', 'payment-1'), {
       ownerUid: 'owner-1', amount: 5000
@@ -86,7 +86,7 @@ test('a client cannot create a profile granting itself superAdmin', async () => 
   await assertFails(setDoc(doc(db, 'users', 'freelancer-1'), {
     displayName: 'Synthetic Test',
     role: 'superAdmin',
-    accountStatus: 'approved'
+    status: 'approved'
   }));
 });
 
@@ -94,7 +94,7 @@ test('a client cannot change role or approval status', async () => {
   const db = env.authenticatedContext('owner-1').firestore();
   await assertFails(updateDoc(doc(db, 'users', 'owner-1'), { role: 'admin' }));
   await assertFails(updateDoc(doc(db, 'users', 'owner-1'), {
-    accountStatus: 'approved'
+    status: 'approved'
   }));
 });
 
