@@ -170,7 +170,7 @@ test('deployer cannot read another users finance by guessing document IDs', asyn
 test('approved freelancer cannot read client package or another assignment payment', async () => {
   const db = env.authenticatedContext('freelancer-1').firestore();
   await assertFails(getDoc(doc(db, 'financeDeployment', 'job-1')));
-  await assertFails(getDoc(db, 'financeAssignments', 'assignment-1'));
+  await assertFails(getDoc(doc(db, 'financeAssignments', 'assignment-1')));
 });
 
 test('list queries cannot enumerate deployment finance records', async () => {
