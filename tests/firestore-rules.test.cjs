@@ -5,7 +5,7 @@ const {
   assertSucceeds,
   assertFails
 } = require('@firebase/rules-unit-testing');
-const { collection, doc, getDoc, getDocs, setDoc, updateDoc } = require('firebase/firestore');
+const { collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp } = require('firebase/firestore');
 const fs = require('node:fs');
 
 let env;
@@ -69,6 +69,43 @@ await setDoc(doc(db, 'users', 'pending-1'), {
       paymentAmount: 500
     });
   });
+});
+
+
+test('a signed-in user can submit only a minimal pending access request', async () => {
+  const db = env.authenticatedContext('new-user-1').firestore();
+  await assertSucceeds(setDoc(doc(db, 'users', 'new-user-1'), {
+    uid: 'new-user-1',
+    name: 'newuser@example.com',
+    requestedRole: 'freelancer',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
+});
+
+test('a new user cannot self-approve or assign themselves a privileged role', async () => {
+  const db = env.authenticatedContext('new-user-2').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'new-user-2'), {
+    uid: 'new-user-2',
+    name: 'newuser@example.com',
+    requestedRole: 'freelancer',
+    status: 'approved',
+    role: 'superAdmin',
+    createdAt: serverTimestamp()
+  }));
+});
+
+test('a user cannot create an access request for another UID', async () => {
+  const db = env.authenticatedContext('new-user-3').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'victim-1'), {
+    uid: 'victim-1',
+    name: 'newuser@example.com',
+    requestedRole: 'freelancer',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
 });
 
 test('a user can read their own profile', async () => {
