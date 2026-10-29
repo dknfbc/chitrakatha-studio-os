@@ -75,8 +75,7 @@ await setDoc(doc(db, 'users', 'pending-1'), {
 test('a signed-in user can submit only a minimal pending access request', async () => {
   const db = env.authenticatedContext('new-user-1').firestore();
   await assertSucceeds(setDoc(doc(db, 'users', 'new-user-1'), {
-    uid: 'new-user-1',
-    name: 'newuser@example.com',
+    email: 'newuser@example.com',
     requestedRole: 'freelancer',
     status: 'pending',
     role: null,
@@ -87,8 +86,7 @@ test('a signed-in user can submit only a minimal pending access request', async 
 test('a new user cannot self-approve or assign themselves a privileged role', async () => {
   const db = env.authenticatedContext('new-user-2').firestore();
   await assertFails(setDoc(doc(db, 'users', 'new-user-2'), {
-    uid: 'new-user-2',
-    name: 'newuser@example.com',
+    email: 'newuser@example.com',
     requestedRole: 'freelancer',
     status: 'approved',
     role: 'superAdmin',
@@ -99,8 +97,7 @@ test('a new user cannot self-approve or assign themselves a privileged role', as
 test('a user cannot create an access request for another UID', async () => {
   const db = env.authenticatedContext('new-user-3').firestore();
   await assertFails(setDoc(doc(db, 'users', 'victim-1'), {
-    uid: 'victim-1',
-    name: 'newuser@example.com',
+    email: 'newuser@example.com',
     requestedRole: 'freelancer',
     status: 'pending',
     role: null,
