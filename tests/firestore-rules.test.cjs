@@ -333,3 +333,32 @@ test('signup rejects a non-null initial role', async () => {
     createdAt: serverTimestamp()
   }));
 });
+
+
+test('the current app signup payload is accepted with matching UID and name', async () => {
+  const uid = 'app-signup-1';
+  const db = env.authenticatedContext(uid).firestore();
+  await assertSucceeds(setDoc(doc(db, 'users', uid), {
+    uid,
+    name: 'Test Deployer',
+    email: 'newuser@example.com',
+    requestedRole: 'deployer',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
+});
+
+test('signup rejects a mismatched UID field', async () => {
+  const uid = 'app-signup-2';
+  const db = env.authenticatedContext(uid).firestore();
+  await assertFails(setDoc(doc(db, 'users', uid), {
+    uid: 'somebody-else',
+    name: 'Test Freelancer',
+    email: 'newuser@example.com',
+    requestedRole: 'freelancer',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
+});
