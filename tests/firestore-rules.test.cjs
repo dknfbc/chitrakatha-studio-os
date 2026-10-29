@@ -105,6 +105,25 @@ test('a user cannot create an access request for another UID', async () => {
   }));
 });
 
+
+test('a user cannot edit or delete their own profile from the client', async () => {
+  const db = env.authenticatedContext('deployer-1').firestore();
+  await assertFails(updateDoc(doc(db, 'users', 'deployer-1'), { email: 'changed@example.com' }));
+  await assertFails(require('firebase/firestore').deleteDoc(doc(db, 'users', 'deployer-1')));
+});
+
+test('pending signup rejects unexpected privilege or profile fields', async () => {
+  const db = env.authenticatedContext('new-user-4').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'new-user-4'), {
+    email: 'newuser@example.com',
+    requestedRole: 'freelancer',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp(),
+    isAdmin: true
+  }));
+});
+
 test('a user can read their own profile', async () => {
   const db = env.authenticatedContext('owner-1').firestore();
   await assertSucceeds(getDoc(doc(db, 'users', 'owner-1')));
