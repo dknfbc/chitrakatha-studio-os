@@ -154,6 +154,28 @@ test('the proposed assignment finance partition stays denied to all current role
   }
 });
 
+
+test('Super Admin remains denied both separated finance collections even with extra role claims', async () => {
+  const db = env.authenticatedContext('owner-1', {
+    role: 'superAdmin',
+    additionalRoles: ['deployer', 'freelancer']
+  }).firestore();
+  await assertFails(getDoc(doc(db, 'financeDeployment', 'job-1')));
+  await assertFails(getDoc(doc(db, 'financeAssignments', 'assignment-1')));
+});
+
+test('deployer cannot read another users finance by guessing document IDs', async () => {
+  const db = env.authenticatedContext('deployer-1').firestore();
+  await assertFails(getDoc(doc(db, 'financeDeployment', 'job-1')));
+  await assertFails(getDoc(doc(db, 'financeAssignments', 'assignment-1')));
+});
+
+test('approved freelancer cannot read client package or another assignment payment', async () => {
+  const db = env.authenticatedContext('freelancer-1').firestore();
+  await assertFails(getDoc(doc(db, 'financeDeployment', 'job-1')));
+  await assertFails(getDoc(db, 'financeAssignments', 'assignment-1'));
+});
+
 test('list queries cannot enumerate deployment finance records', async () => {
   for (const uid of ['owner-1', 'deployer-1', 'freelancer-1', 'pending-1']) {
     const db = env.authenticatedContext(uid).firestore();
