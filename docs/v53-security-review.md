@@ -25,6 +25,12 @@
 - The same file still contains gear-custody state identifiers (`gearChecks`, `gearMissing`, `gearAudit`, `gearConfirmed`). This conflicts with the explicit requirement to exclude Gear Custody and must be resolved in the correct app base before release.
 - Do not silently rewrite the 4.29 MB app file as part of this security-only branch. Confirm the intended v52 base/source artifact first, then remove the excluded feature and plan a reviewed migration from local-only operational state to secure shared data.
 
+
+- The deeper UI-path review confirms that client finance (`d.finances.clientTotal`, `d.finances.advance`) and freelancer payment values (`assignment.pay`, `assignment.advance`) are embedded in the same browser-local deployment state as operational data. The workspace renders client finance totals and freelancer payout totals from that local state. The page itself explicitly warns that the local prototype does not enforce real account privacy.
+- The HTML's main `render()` function renders operational pages without consulting the Firebase approval state. Firebase's `onAuthStateChanged` handler updates only the profile/account labels; it does not gate the main application pages. The Season Radar admin page itself says it is not protected by real authentication.
+- The current app also exposes a Team gear interface that tracks custody/holder state, including `gearChecks`, `gearAudit`, and `setGearCustody()`. This is the removed Gear Custody feature, not merely an unused data field.
+- Branch comparison confirms the `v52-firebase-auth` app file and the `v53-security-review` app file have the same blob SHA. The named v52 HTML's actual document title is v41 · Clean Starter; the `main` branch contains no app HTML at all. There is no alternate v52 app artifact in the currently inspected branches to switch to safely.
+
 ## Decision
 
 Keep deny-by-default access for all operational and financial collections until the actual application data model and every relevant read/write path are verified. Do not loosen rules just to make screens appear functional.
