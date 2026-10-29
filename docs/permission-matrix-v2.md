@@ -73,6 +73,18 @@ For each role, test both allowed and denied cases:
 - Gear Custody remains excluded.
 - Do not add fake bookings, roster entries, season dates, or financial values.
 
+
+## Import known work dates first; complete details later
+
+- The Deployer can create a **basic deployment placeholder** from dates supplied by Upasak Mukherjee, even when the client, rituals, call time, roster, and other details are not yet known.
+- Record only confirmed information initially: source/contact (Upasak Mukherjee), known work date(s), and a clearly marked **Details pending** status. Do not invent clients, rituals, freelancers, roles, or financial amounts.
+- The placeholder must appear in Upasak's own Deployer view and remain editable by him. Other authorized team members see only the operational fields allowed by their assignment and role.
+- After permanent deployment, the Deployer can upload reference photos/screenshots supplied later and use them to complete the work record: client names, rituals/events, call times, assigned freelancers and roles, deliverables, and other confirmed operational details.
+- Store source photos as attachments to the relevant draft/deployment, with upload time and uploader; allow later additions and replacement/removal only by authorized users. Do not parse or publish unconfirmed details automatically; require Deployer review before saving extracted information.
+- Keep client/crew personal information and finance data out of broad photo metadata, logs, and previews. Finance remains in the separated finance collections and must never be visible to Super Admin.
+- Support draft → details pending → ready/confirmed states. Drafts must not count as confirmed bookings or create availability conflicts until the Deployer confirms the relevant date/work status.
+- This workflow is a post-deployment requirement; it is not permission to deploy the review branch or change the live Firebase/Worker now.
+
 ## Decisions still not defined by this draft
 
 - The precise Super Admin operational permissions beyond established system/team/Season Radar administration.
