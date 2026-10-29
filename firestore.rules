@@ -8,28 +8,24 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if signedInAs(userId);
 
-      // Allow only a minimal self-created access request. Approval and role
-      // assignment remain server/admin controlled; clients cannot self-approve.
+      // Match the app's actual signup payload; keep every request pending.
       allow create: if signedInAs(userId)
                     && request.resource.data.keys().hasOnly([
-                      'uid', 'name', 'requestedRole', 'status', 'role', 'createdAt'
+                      'email', 'requestedRole', 'status', 'role', 'createdAt'
                     ])
                     && request.resource.data.keys().hasAll([
-                      'uid', 'name', 'requestedRole', 'status', 'role', 'createdAt'
+                      'email', 'requestedRole', 'status', 'role', 'createdAt'
                     ])
-                    && request.resource.data.uid == request.auth.uid
-                    && request.resource.data.name is string
-                    && request.resource.data.name.size() > 0
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() > 0
                     && request.resource.data.requestedRole in ['deployer', 'freelancer']
                     && request.resource.data.status == 'pending'
                     && request.resource.data.role == null
                     && request.resource.data.createdAt is timestamp;
 
-      // Profile changes and approval/role changes require a trusted workflow.
       allow update, delete: if false;
     }
 
-    // All other collections remain denied until their permissions are implemented.
     match /{document=**} {
       allow read, write: if false;
     }
