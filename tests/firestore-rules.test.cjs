@@ -299,3 +299,37 @@ test('a freelancer cannot promote themselves to superAdmin', async () => {
     })
   );
 });
+
+
+test('signup rejects a non-string email', async () => {
+  const db = env.authenticatedContext('typed-email-1').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'typed-email-1'), {
+    email: 12345,
+    requestedRole: 'freelancer',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
+});
+
+test('signup rejects any initial status other than pending', async () => {
+  const db = env.authenticatedContext('bad-status-1').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'bad-status-1'), {
+    email: 'newuser@example.com',
+    requestedRole: 'freelancer',
+    status: 'approved',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
+});
+
+test('signup rejects a non-null initial role', async () => {
+  const db = env.authenticatedContext('bad-initial-role-1').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'bad-initial-role-1'), {
+    email: 'newuser@example.com',
+    requestedRole: 'deployer',
+    status: 'pending',
+    role: 'deployer',
+    createdAt: serverTimestamp()
+  }));
+});
