@@ -83,6 +83,38 @@ test('a signed-in user can submit only a minimal pending access request', async 
   }));
 });
 
+test('signup rejects an empty email address', async () => {
+  const db = env.authenticatedContext('bad-email-1').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'bad-email-1'), {
+    email: '',
+    requestedRole: 'freelancer',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
+});
+
+test('signup rejects roles outside deployer and freelancer', async () => {
+  const db = env.authenticatedContext('bad-role-1').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'bad-role-1'), {
+    email: 'newuser@example.com',
+    requestedRole: 'superAdmin',
+    status: 'pending',
+    role: null,
+    createdAt: serverTimestamp()
+  }));
+});
+
+test('signup rejects a missing required field', async () => {
+  const db = env.authenticatedContext('missing-field-1').firestore();
+  await assertFails(setDoc(doc(db, 'users', 'missing-field-1'), {
+    email: 'newuser@example.com',
+    requestedRole: 'freelancer',
+    status: 'pending',
+    role: null
+  }));
+});
+
 test('a new user cannot self-approve or assign themselves a privileged role', async () => {
   const db = env.authenticatedContext('new-user-2').firestore();
   await assertFails(setDoc(doc(db, 'users', 'new-user-2'), {
