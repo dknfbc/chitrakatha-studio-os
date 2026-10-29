@@ -8,14 +8,24 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if signedInAs(userId);
 
-      // Match the app's actual signup payload; keep every request pending.
+      // Match the current app signup payload while validating identity fields.
+      // Access requests are always pending; role assignment is admin-only.
       allow create: if signedInAs(userId)
                     && request.resource.data.keys().hasOnly([
-                      'email', 'requestedRole', 'status', 'role', 'createdAt'
+                      'uid', 'name', 'email', 'requestedRole', 'status', 'role', 'createdAt'
                     ])
                     && request.resource.data.keys().hasAll([
                       'email', 'requestedRole', 'status', 'role', 'createdAt'
                     ])
+                    && (
+                      !('uid' in request.resource.data)
+                      || request.resource.data.uid == userId
+                    )
+                    && (
+                      !('name' in request.resource.data)
+                      || (request.resource.data.name is string
+                          && request.resource.data.name.size() > 0)
+                    )
                     && request.resource.data.email is string
                     && request.resource.data.email.size() > 0
                     && request.resource.data.requestedRole in ['deployer', 'freelancer']
