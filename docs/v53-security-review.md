@@ -7,7 +7,8 @@
 - `firestore.rules` permits a signed-in user to read only `users/{theirUid}`.
 - Signup can create only a minimal pending request with exactly `email`, `requestedRole`, `status`, `role`, and `createdAt`; it requires `status: 'pending'` and `role: null`.
 - Client-side profile updates and deletes are denied. All other Firestore reads and writes are denied by the catch-all rule.
-- The app's observed access-request payload uses `status: 'pending'`, `role: null`, and `createdAt`; the rules now match that payload. The auth-state handler checks `status === 'approved'`.
+- The app's actual access-request payload includes `uid`, `name`, `email`, `requestedRole`, `status: 'pending'`, `role: null`, and `createdAt`. The initial rules incorrectly rejected `uid` and `name`; the rules now allow those optional fields only when `uid` matches the document/auth UID and `name` is a non-empty string. The auth-state handler checks `status === 'approved'`.
+- Added emulator coverage for the exact app-shaped signup payload and for rejecting a mismatched `uid`.
 - Test fixtures use `role` and `status`; the earlier `accountStatus` mismatch note is stale and has been removed.
 - The test suite currently verifies pending signup, prevention of self-approval/promotion, profile-read isolation, and denial of finance/operational records. It intentionally does **not** grant any positive finance or operational access yet.
 - The current tests seed synthetic examples for `financialRecords`, `financeDeployment`, `financeAssignments`, and `deployments`. These are test fixtures, not proof that the live app already uses those schemas.
