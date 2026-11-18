@@ -3,6 +3,14 @@
   "name": "chitrakatha-v52-preview",
   "main": "src/worker.js",
   "compatibility_date": "2026-10-23",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "chitrakatha-studio-data",
+      "database_id": "68fa2037-bfdc-4945-bc11-cd3968b869c7",
+      "migrations_dir": "migrations"
+    }
+  ],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
