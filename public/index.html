@@ -832,6 +832,12 @@ function getPersonPortrait(name) {
   const kCustom = Object.keys(custom).find(k => matchMember(k, name));
   if(kCustom && custom[kCustom]) return custom[kCustom];
 
+  if(PERSON_PORTRAITS && PERSON_PORTRAITS[name]) return PERSON_PORTRAITS[name];
+  if(PERSON_PORTRAITS) {
+    const kBase = Object.keys(PERSON_PORTRAITS).find(k => matchMember(k, name));
+    if(kBase && PERSON_PORTRAITS[kBase]) return PERSON_PORTRAITS[kBase];
+  }
+
   try {
     const customAvatar = localStorage.getItem('chitrakatha_custom_avatar_' + name);
     if(customAvatar) return customAvatar;
@@ -840,12 +846,6 @@ function getPersonPortrait(name) {
       if(emailAvatar) return emailAvatar;
     }
   } catch(_) {}
-
-  if(PERSON_PORTRAITS && PERSON_PORTRAITS[name]) return PERSON_PORTRAITS[name];
-  if(PERSON_PORTRAITS) {
-    const kBase = Object.keys(PERSON_PORTRAITS).find(k => matchMember(k, name));
-    if(kBase && PERSON_PORTRAITS[kBase]) return PERSON_PORTRAITS[kBase];
-  }
   return null;
 }
 
@@ -4201,7 +4201,7 @@ function profilePage(){
   const displayName = profile.display_name || accountEmail || 'Studio Member';
   const roleLabel = matchMember(displayName, 'Upasak Mukherjee') ? 'Cinematographer / Photographer' : (profile.professional_role || profile.role || 'Member');
   const customSavedPhoto = (accountEmail ? localStorage.getItem('chitrakatha_custom_avatar_' + accountEmail) : null) || (profile.display_name ? localStorage.getItem('chitrakatha_custom_avatar_' + profile.display_name) : null);
-  const avatarPhoto = profile.photo_data || customSavedPhoto || null;
+  const avatarPhoto = profile.photo_data || getPersonPortrait(displayName) || customSavedPhoto || null;
   const initials = (displayName || 'C').split(' ').map(s=>s[0]).join('').slice(0, 2).toUpperCase();
 
   const myPerson = people.find(p=>matchMember(p.name, displayName)) || people.find(p=>matchMember(p.name, profile.display_name)) || null;

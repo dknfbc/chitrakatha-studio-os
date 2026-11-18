@@ -733,10 +733,16 @@ export default {
         const body = await readJson(request);
         const camera = stringField(body.camera, 200) || "";
         const gear = stringField(body.gear, 2000) || "";
+        const targetName = stringField(body.displayName, 100);
+        let targetUid = user.uid;
+        if (targetName && targetName !== viewer.display_name) {
+          const targetUser = await env.DB.prepare("SELECT uid FROM users WHERE display_name = ?").bind(targetName).first();
+          if (targetUser?.uid) targetUid = targetUser.uid;
+        }
         await env.DB.prepare(`INSERT INTO user_gear (uid, camera, gear, updated_at)
           VALUES (?, ?, ?, datetime('now'))
           ON CONFLICT(uid) DO UPDATE SET camera = excluded.camera, gear = excluded.gear, updated_at = excluded.updated_at`).bind(
-          user.uid, camera, gear
+          targetUid, camera, gear
         ).run();
         return json({ status: "saved", camera, gear });
       }
@@ -746,17 +752,15 @@ export default {
         return json({ camera: row?.camera || "", gear: row?.gear || "" });
       }
       if (url.pathname === "/api/profile/photo" && request.method === "POST") {
-        const viewer = await env.DB.prepare("SELECT status, role FROM users WHERE uid = ?").bind(user.uid).first();
+        const viewer = await env.DB.prepare("SELECT status, role, display_name FROM users WHERE uid = ?").bind(user.uid).first();
         if (viewer?.status !== "approved") return json({ error: "forbidden" }, 403);
         const body = await readJson(request), image = validImageData(body.imageData, 300000);
         if (!image) return json({ error: "profile_photo_required_under_300kb" }, 400);
-        if (viewer.role === "superAdmin") {
-          await env.DB.prepare("UPDATE users SET photo_data = ? WHERE uid = ? AND status = 'approved' AND role = 'superAdmin'").bind(image, user.uid).run();
-          return json({ status: "updated" });
+        await env.DB.prepare("UPDATE users SET photo_data = ? WHERE uid = ?").bind(image, user.uid).run();
+        if (viewer.display_name) {
+          await env.DB.prepare("UPDATE users SET photo_data = ? WHERE display_name = ?").bind(image, viewer.display_name).run();
         }
-        const id = crypto.randomUUID();
-        await env.DB.prepare("INSERT INTO profile_photo_proposals (id, uid, image_data, status, submitted_at) VALUES (?, ?, ?, 'pending', datetime('now'))").bind(id, user.uid, image).run();
-        return json({ proposalId: id, status: "pending" }, 201);
+        return json({ status: "updated" });
       }
       if (url.pathname === "/api/admin/profile-photos" && request.method === "GET") {
         if (!await isSuperAdmin(env.DB, user.uid, user.email)) return json({ error: "forbidden" }, 403);
