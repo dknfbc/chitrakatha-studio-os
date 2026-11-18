@@ -996,6 +996,21 @@ function purgeNov23Duplicates() {
     remoteOwnedDeployments.unshift(rudraWork);
   }
 
+  // 3b. Locate authentic Nov 24-26 wedding booking (dep-upasak-wedding-2) and deduplicate Nov 24
+  const isNov24 = d => (d.days || []).some(day => day.date === '2026-11-24');
+  let wedding2 = deployments.find(d => d.id === 'dep-upasak-wedding-2') || (typeof INITIAL_STUDIO_DEPLOYMENTS !== 'undefined' ? INITIAL_STUDIO_DEPLOYMENTS.find(d => d.id === 'dep-upasak-wedding-2') : null);
+  if (wedding2) {
+    deployments = deployments.filter(d => !isNov24(d) || d.id === 'dep-upasak-wedding-2');
+    if (!deployments.some(d => d.id === 'dep-upasak-wedding-2')) {
+      deployments.push(wedding2);
+    }
+    if (Array.isArray(remoteOwnedDeployments)) {
+      remoteOwnedDeployments = remoteOwnedDeployments.filter(d => !isNov24(d) || d.id === 'dep-upasak-wedding-2');
+      if (!remoteOwnedDeployments.some(d => d.id === 'dep-upasak-wedding-2')) {
+        remoteOwnedDeployments.push(wedding2);
+      }
+    }
+  }
   // 4. Clean local storage permanently of ghost duplicates
   try {
     if (typeof STORE_KEY !== 'undefined' && typeof savedState !== 'undefined') {
@@ -1003,6 +1018,9 @@ function purgeNov23Duplicates() {
         savedState.deployments = savedState.deployments.filter(d => !isNov23(d));
         savedState.deployments.unshift(swapnaWork);
         savedState.deployments.unshift(rudraWork);
+        if (wedding2) {
+          savedState.deployments = savedState.deployments.filter(d => !isNov24(d) || d.id === 'dep-upasak-wedding-2');
+        }
       }
       localStorage.setItem(STORE_KEY, JSON.stringify({ ...savedState, deployments, updatedAt: new Date().toISOString() }));
     }
