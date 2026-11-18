@@ -831,6 +831,16 @@ function getPersonPortrait(name) {
   if(custom[name]) return custom[name];
   const kCustom = Object.keys(custom).find(k => matchMember(k, name));
   if(kCustom && custom[kCustom]) return custom[kCustom];
+
+  try {
+    const customAvatar = localStorage.getItem('chitrakatha_custom_avatar_' + name);
+    if(customAvatar) return customAvatar;
+    if(window.__chitraAccount?.email && matchMember(name, window.__chitraAccess?.profile?.display_name || '')) {
+      const emailAvatar = localStorage.getItem('chitrakatha_custom_avatar_' + window.__chitraAccount.email);
+      if(emailAvatar) return emailAvatar;
+    }
+  } catch(_) {}
+
   if(PERSON_PORTRAITS && PERSON_PORTRAITS[name]) return PERSON_PORTRAITS[name];
   if(PERSON_PORTRAITS) {
     const kBase = Object.keys(PERSON_PORTRAITS).find(k => matchMember(k, name));
@@ -4582,6 +4592,13 @@ async function submitProfilePhoto(){const status=$('#profilePhotoStatus');try{co
     const nameKey = window.__chitraAccess?.profile?.display_name || '';
     if(emailKey) localStorage.setItem('chitrakatha_custom_avatar_' + emailKey, imageData);
     if(nameKey) localStorage.setItem('chitrakatha_custom_avatar_' + nameKey, imageData);
+    if(nameKey){
+      if(window.PERSON_PORTRAITS) window.PERSON_PORTRAITS[nameKey] = imageData;
+      if(!window.customPortraits) window.customPortraits = {};
+      window.customPortraits[nameKey] = imageData;
+      window.__customPortraits = window.customPortraits;
+      try { localStorage.setItem('chitrakatha_custom_portraits', JSON.stringify(window.customPortraits)); } catch(_) {}
+    }
     if(window.__chitraAccess?.profile){
       window.__chitraAccess.profile.photo_data = imageData;
     }
